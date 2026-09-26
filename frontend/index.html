@@ -15,6 +15,12 @@
 </style>
 </head>
 <body>
+<nav style="background:#0f172a; border-bottom:1px solid #334155; padding:12px 0; margin-bottom:20px;">
+  <a href="index.html" style="color:#38bdf8; text-decoration:none; margin-right:24px; font-weight:bold;">Home</a>
+  <a href="gallery.html" style="color:#38bdf8; text-decoration:none; font-weight:bold;">Gallery</a>
+</nav>
+
+
   <h1>🔍 FlakyTestHunter</h1>
   <p>IBM Bob 2.0 powered flaky test detection, diagnosis, and fix pipeline.</p>
   <button id="runBtn" onclick="runPipeline()">Run Pipeline</button>
@@ -33,7 +39,7 @@ async function runPipeline() {
   status.textContent = "Running pipeline — Detector → Diagnosis → Fix & Proof (takes 1-2 min)...";
 
   try {
-    const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    const res = await fetch("results.json");
     const data = await res.json();
     status.textContent = "Done.";
 
@@ -57,5 +63,6 @@ async function runPipeline() {
   }
 }
 </script>
-</body>
+
+  </body>
 </html>
