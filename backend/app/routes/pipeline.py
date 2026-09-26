@@ -30,7 +30,7 @@ FIX_PROMPT = """Act as a Fix and Proof subagent. Based on the diagnosis, fix the
 After applying the fix, run the test 10 more times in a row and report the new pass/fail ratio. Confirm whether the test is now fully deterministic."""
 
 @router.post("/run-pipeline")
-def run_pipeline(req: PipelineRequest):
+def run_pipeline(req: PipelineRequest = PipelineRequest()):
     # Reset to original flaky state before each demo run
     reset_flaky_test(PROJECT_ROOT)
 

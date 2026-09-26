@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FlakyTestHunter</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; background: #0f172a; color: #e2e8f0; }
+  h1 { color: #38bdf8; }
+  button { background: #38bdf8; color: #0f172a; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+  button:disabled { background: #64748b; cursor: not-allowed; }
+  .stage { margin-top: 24px; padding: 16px; background: #1e293b; border-radius: 8px; border-left: 4px solid #38bdf8; }
+  .stage h2 { margin-top: 0; color: #38bdf8; }
+  pre { white-space: pre-wrap; word-wrap: break-word; font-size: 13px; color: #cbd5e1; }
+  #status { margin-top: 16px; color: #94a3b8; }
+</style>
+</head>
+<body>
+  <h1>🔍 FlakyTestHunter</h1>
+  <p>IBM Bob 2.0 powered flaky test detection, diagnosis, and fix pipeline.</p>
+  <button id="runBtn" onclick="runPipeline()">Run Pipeline</button>
+  <div id="status"></div>
+  <div id="results"></div>
+
+<script>
+const API_URL = "http://localhost:8000/api/run-pipeline"; // swap to Render URL after deploy
+
+async function runPipeline() {
+  const btn = document.getElementById("runBtn");
+  const status = document.getElementById("status");
+  const results = document.getElementById("results");
+  btn.disabled = true;
+  results.innerHTML = "";
+  status.textContent = "Running pipeline — Detector → Diagnosis → Fix & Proof (takes 1-2 min)...";
+
+  try {
+    const res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    const data = await res.json();
+    status.textContent = "Done.";
+
+    const stages = [
+      { key: "detector", title: "1. Detector" },
+      { key: "diagnosis", title: "2. Diagnosis" },
+      { key: "fix_and_proof", title: "3. Fix & Proof" }
+    ];
+
+    for (const s of stages) {
+      const stage = data[s.key];
+      const div = document.createElement("div");
+      div.className = "stage";
+      div.innerHTML = `<h2>${s.title}</h2><pre>${(stage.output || stage.error || "No output").replace(/</g, "&lt;")}</pre>`;
+      results.appendChild(div);
+    }
+  } catch (err) {
+    status.textContent = "Error: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
