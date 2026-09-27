@@ -106,7 +106,75 @@ async function runLivePipeline() {
   }
 }
 
+
+async function uploadAndFix() {
+  const fileInput = document.getElementById("uploadFile");
+  const status = document.getElementById("uploadStatus");
+  const results = document.getElementById("uploadResults");
+
+  if (!fileInput.files.length) {
+    status.textContent = "Please select a .py file first.";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  status.textContent = "🟢 Uploading and running Bob pipeline on your file (~1-2 min)...";
+  results.innerHTML = "";
+
+  try {
+    const res = await fetch("https://flakytesthunter.onrender.com/api/upload-and-fix", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      status.textContent = "Error: " + data.error;
+      return;
+    }
+
+    status.textContent = "✅ Done.";
+
+    const stages = [
+      { key: "detector", title: "1. Detector" },
+      { key: "diagnosis", title: "2. Diagnosis" },
+      { key: "fix_and_proof", title: "3. Fix & Proof" }
+    ];
+    for (const s of stages) {
+      const stage = data[s.key];
+      const div = document.createElement("div");
+      div.className = "stage";
+      div.style.borderLeftColor = "#22c55e";
+      div.innerHTML = `<h2 style="color:#22c55e;">${s.title}</h2><pre>${(stage.output || stage.error || "No output").replace(/</g, "&lt;")}</pre>`;
+      results.appendChild(div);
+    }
+
+    if (data.fixed_file_content) {
+      const blob = new Blob([data.fixed_file_content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "fixed_" + data.fixed_filename;
+      link.textContent = "⬇ Download Fixed File";
+      link.style.cssText = "display:inline-block; margin-top:16px; padding:10px 20px; background:#22c55e; color:#0f172a; font-weight:bold; border-radius:6px; text-decoration:none;";
+      results.appendChild(link);
+    }
+  } catch (err) {
+    status.textContent = "❌ Error: " + err.message;
+  }
+}
+
 </script>
 
-  </body>
+  
+  <h2 style="margin-top:48px; color:#38bdf8;">🧪 Try It On Your Own File</h2>
+  <p style="color:#94a3b8;">Upload a Python file with a test — Bob will diagnose and fix any flakiness, live.</p>
+  <input type="file" id="uploadFile" accept=".py" style="margin-top:12px; color:#e2e8f0;">
+  <button onclick="uploadAndFix()" style="background:#22c55e; margin-left:12px;">Upload &amp; Fix</button>
+  <div id="uploadStatus" style="margin-top:12px;"></div>
+  <div id="uploadResults"></div>
+
+</body>
 </html>
