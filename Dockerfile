@@ -4,11 +4,10 @@ RUN apt-get update && apt-get install -y python3 python3-pip python3-venv curl &
 
 RUN curl -fsSL https://bob.ibm.com/download/bobshell.sh | bash -s -- --pm npm
 
-WORKDIR /app
-COPY backend/requirements.txt .
-RUN pip3 install --break-system-packages -r requirements.txt
+WORKDIR /root/FlakyTestHunter
+COPY . .
 
-COPY backend/ .
+RUN pip3 install --break-system-packages -r backend/requirements.txt
 
 EXPOSE 10000
-CMD ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000", "--app-dir", "backend"]
