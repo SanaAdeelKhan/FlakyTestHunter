@@ -23,7 +23,12 @@
 
   <h1>🔍 FlakyTestHunter</h1>
   <p>IBM Bob 2.0 powered flaky test detection, diagnosis, and fix pipeline.</p>
-  <button id="runBtn" onclick="runPipeline()">Run Pipeline</button>
+  <button id="runBtn" onclick="runPipeline()">Run Pipeline (Cached Demo)</button>
+  <button id="liveRunBtn" onclick="runLivePipeline()" style="background:#f59e0b; margin-left:12px;">Run Live (Real Bob, ~2 min)</button>
+  <p style="font-size:13px; color:#94a3b8; margin-top:8px;">🔴 Triggers a real live IBM Bob 2.0 run on our deployed backend (~1-2 min, costs real Bobcoins — please use sparingly).</p>
+  <div id="liveStatus" style="margin-top:12px;"></div>
+  <div id="liveResults"></div>
+
   <div id="status"></div>
   <div id="results"></div>
 
@@ -62,6 +67,45 @@ async function runPipeline() {
     btn.disabled = false;
   }
 }
+
+async function runLivePipeline() {
+  const btn = document.getElementById("liveRunBtn");
+  const status = document.getElementById("liveStatus");
+  const results = document.getElementById("liveResults");
+  btn.disabled = true;
+  results.innerHTML = "";
+  status.textContent = "🔴 LIVE: Running real Bob Shell pipeline — Detector → Diagnosis → Fix & Proof (~1-2 min, please wait)...";
+
+  try {
+    const res = await fetch("https://flakytesthunter.onrender.com/api/run-pipeline", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}"
+    });
+    const data = await res.json();
+    status.textContent = "✅ Live run complete.";
+
+    const stages = [
+      { key: "detector", title: "1. Detector (LIVE)" },
+      { key: "diagnosis", title: "2. Diagnosis (LIVE)" },
+      { key: "fix_and_proof", title: "3. Fix & Proof (LIVE)" }
+    ];
+
+    for (const s of stages) {
+      const stage = data[s.key];
+      const div = document.createElement("div");
+      div.className = "stage";
+      div.style.borderLeftColor = "#f59e0b";
+      div.innerHTML = `<h2 style="color:#f59e0b;">${s.title}</h2><pre>${(stage.output || stage.error || "No output").replace(/</g, "&lt;")}</pre>`;
+      results.appendChild(div);
+    }
+  } catch (err) {
+    status.textContent = "❌ Error: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 </script>
 
   </body>
